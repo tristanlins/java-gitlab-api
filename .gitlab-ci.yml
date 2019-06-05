@@ -5,6 +5,7 @@ cache:
     - /root/.m2/repository
 
 build:
+  stage: build
   artifacts:
     name: build
     paths:
@@ -16,6 +17,7 @@ build:
     - ./mvnw -B -V package
 
 deploy:
+  stage: deploy
   dependencies:
     - build
   only:
