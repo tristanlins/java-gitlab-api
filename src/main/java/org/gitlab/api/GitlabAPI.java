@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gitlab.api.http.GitlabHTTPRequestor;
 import org.gitlab.api.http.Query;
 import org.gitlab.api.models.*;
+import org.gitlab.api.query.PaginationQuery;
+import org.gitlab.api.query.PipelinesQuery;
+import org.gitlab.api.query.ProjectsQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -377,7 +380,7 @@ public class GitlabAPI {
 
         return dispatch().to(tailUrl, GitlabSSHKey.class);
     }
-    
+
     /**
      * Create a new ssh key for the authenticated user.
      *
@@ -632,7 +635,7 @@ public class GitlabAPI {
 
         return dispatch().to(tailUrl, GitlabGroup.class);
     }
-	
+
 	/**
      * Creates a Group
      *
@@ -829,6 +832,16 @@ public class GitlabAPI {
     }
 
     /**
+     * Get a list of projects accessible by the authenticated user.
+     *
+     * @return A list of gitlab projects
+     */
+    public List<GitlabProject> getProjects(ProjectsQuery projectsQuery) {
+        String tailUrl = GitlabProject.URL + projectsQuery;
+        return retrieve().getAll(tailUrl, GitlabProject[].class);
+    }
+
+    /**
      * Get a list of projects by pagination accessible by the authenticated user.
      *
      * @param pagination
@@ -959,6 +972,47 @@ public class GitlabAPI {
     public GitlabUpload uploadFile(GitlabProject project, File file) throws IOException {
         String tailUrl = GitlabProject.URL + "/" + sanitizeProjectId(project.getId()) + GitlabUpload.URL;
         return dispatch().withAttachment("file", file).to(tailUrl, GitlabUpload.class);
+    }
+
+    /**
+     * Get a list of a project's pipelines in Gitlab
+     *
+     * @param project the project
+     * @return A list of project pipelines
+     */
+    public List<GitlabPipeline> getProjectPipelines(GitlabProject project) {
+        return getProjectPipelines(project.getId());
+    }
+
+    /**
+     * Get a list of a project's pipelines in Gitlab
+     *
+     * @param projectId the project id
+     * @return A list of project pipelines
+     */
+    public List<GitlabPipeline> getProjectPipelines(Integer projectId) {
+        return getProjectPipelines(projectId, new PipelinesQuery().withPerPage(PaginationQuery.MAX_ITEMS_PER_PAGE));
+    }
+
+    /**
+     * Get a list of a project's pipelines in Gitlab
+     *
+     * @param project the project
+     * @return A list of project pipelines
+     */
+    public List<GitlabPipeline> getProjectPipelines(GitlabProject project, PipelinesQuery pipelinesQuery) {
+        return getProjectPipelines(project.getId(), pipelinesQuery);
+    }
+
+    /**
+     * Get a list of a project's pipelines in Gitlab
+     *
+     * @param projectId the project id
+     * @return A list of project pipelines
+     */
+    public List<GitlabPipeline> getProjectPipelines(Integer projectId, PipelinesQuery pipelinesQuery) {
+        String tailUrl = GitlabProject.URL + "/" + sanitizeProjectId(projectId) + GitlabPipeline.URL + pipelinesQuery;
+        return retrieve().getAll(tailUrl, GitlabPipeline[].class);
     }
 
     /**
