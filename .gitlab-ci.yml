@@ -1,0 +1,24 @@
+image: adoptopenjdk/openjdk11
+
+cache:
+  paths:
+    - /root/.m2/repository
+
+build:
+  artifacts:
+    name: build
+    paths:
+      - target
+    untracked: true
+    expire_in: 30 days
+    when: always
+  script:
+    - ./mvnw -B -V package
+
+deploy:
+  dependencies:
+    - build
+  only:
+    - master
+  script:
+    - ./mvnw -B -V -s ci_settings.xml -P gitlab-repository deploy
